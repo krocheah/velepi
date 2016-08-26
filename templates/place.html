@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class = "container">
+  <div class = "row">
+    <div class="col-md-4">
+      <div class="place-info">
+        <h2>{{ place.name }}</h2>
+        <p>
+          {% if place.likes.count > 0 %}
+            <span id='like-count'>{{ place.likes.count }} kişi begendi.</span>
+          {% else %}
+             <span id='like-count'>Burayı şu an begenen yok.</span>
+          {% endif %}
+          {% if user.username %}
+            {% if user in place.likes.all %}
+              <a id="like" href="{% url "like_place" place.id %}">Beğenmekten vazgeç</a>
+            {% else %}
+              <a id="like" href="{% url "like_place" place.id %}">Beğen</a>
+          {% endif %}
+        {% endif %}
+        </p>
+        <h4>{{ place.category }}</h4>
+        <p>
+            {{ place.description|linebreaksbr }}
+        </p>
+      </div>
+      <div class="place-images" style="padding-top : 50px">
+        {% for media in place.place_pictures.all %}
+            <img src="{{ media }}" style="width:50px; height:50px"></img>
+        {% empty %}
+          <p>
+            Bu yerin hiç fotografı yok.
+            <a href="{% url "new_media" place.id %}">Bir tane ekleyin.</a>
+          </p>
+        {% endfor %}
+        {% if place.place_pictures.count < 12  and place.place_pictures.count > 0 %}
+          <br />
+          <a href="{% url "new_media" place.id %}">Yeni bir fotograf ekleyin.</a>
+        {% endif %}
+      </div>
+    </div>
+      <div class="place-map col-md-8">
+        <div id="map"></div>
+      </div>
+    </div>
+  <div class="row">
+    <div class="reviews" style="padding-top : 100px">
+      <h3>Yorumlar</h3>
+          {% for review in place.review_set.all %}
+            {%if review.is_active %}
+              <div class="comments" style="margin-bottom : 30px; border : solid 1px;">
+                <blockquote>
+                  <p>{{ review.comment }}</p>
+                  <small>
+                    {{ review.user.username }}
+                  </small>
+                  {% if review.user.username == user.username %}
+                    <a href="{% url "update_review" place.id review.id %}">Yorumunuzu düzenleyin.</a>
+                  {% endif %}
+                </blockquote>
+              </div>
+            {% endif %}
+            {% if not review.is_active and review.user.username == user.username %}
+              <div class="comments" style="margin-bottom : 30px; border : solid 1px;">
+                <blockquote>
+                  <span style="color:Red"> Onay Bekleniyor </span>
+                  <p>{{ review.comment }}</p>
+                  <small>
+                    {{ review.user.username }}
+                  </small>
+                  <a href="{% url "update_review" place.id review.id %}">Yorumunuzu düzenleyin.</a>
+                </blockquote>
+              </div>
+            {% endif %}
+          {% endfor %}
+          {% if user.username %}
+            {% if user.username not in place.commenters %}
+              {% if place.active_reviews.count > 0 %}
+                <p>
+                  <a href="{% url "new_review" place.id %}">Bir yorum ekleyin.</a>
+                </p>
+              {% else %}
+                <p>
+                  Bu yere henüz yorum yapılmamış.
+                  <a href="{% url "new_review" place.id %}">Bir tane ekleyin.</a>
+                </p>
+            {% endif %}
+          {% endif %}
+        {% else %}
+          Bu yere henüz yorum yapılmamış. Yorum yapabilmek için lütfen
+          <a href="{% url "new_review" place.id %}"> giriş yapınız.</a>
+        {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block js %}
+<script type="text/javascript">
+var map = L.map('map').setView([{{ place.coordinates }}], 13);
+
+L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+
+L.marker([{{ place.coordinates }}]).addTo(map)
+.bindPopup('<div class="popup_container" style="text-align:center">' +
+              '<div class="popup_description" style="display: block">' +
+                '<h2 style="margin-bottom:0px">' +
+                  '<a href="{{ place.get_absolute_url }}">{{ place.name }}</a>' +
+                '</h2>' +
+                '<span style="color:blue">{{ place.category }}</span>' +
+              '</div>' +
+              '<div class="popup_image" style="padding-top:15px">' +
+                '{% if place.place_pictures.count > 0 %}' +
+                  '<img src="{{ place.place_pictures.0 }}" style="width:75px;height:75px"></img>' +
+                '{%else%}' +
+                  '<img src="/media/uploads/no_image.jpg" style="width:75px;height:75px">' +
+                '{% endif %}' +
+              '</div>' +
+            '</div>'
+          )
+.openPopup();
+
+/*$('#like').on('click', function(event){
+  $.getJSON(
+    $('#like').attr('href'),
+    function (response) {
+      $('#like-count').html(response.count);
+
+      if (response.action === 'like') {
+        $('#like').html('Begenmekten vazgeç.')
+      } else{
+        $('#like').html('Begen.')
+      }
+    }
+  );
+
+  event.preventDefault() //<-- browser'ın yapacagı default işi kesiyor. (burada a href'e gitmesin diye uyguladık.)
+
+}); <-- getJSON methodu ile yapmak ama database'e gidecegimiz için POST olması lazım */
+
+$('#like').on('click', function (event) {
+    $.ajax({
+        url: $("#like").attr('href'),
+        method: 'POST',
+        dataType: 'json',
+        data: {
+          csrfmiddlewaretoken: "{{ csrf_token }}"
+        }
+    }).done(function (response) {
+      if ($('#like-count').html() == 'Burayı şu an begenen yok.'){
+        $('#like-count').html(response.count + ' kişi begendi.');
+      } else {
+        $('#like-count').html('Burayı şu an begenen yok.');
+      }
+        if (response.action === 'like') {
+            $('#like').html('Beğenmekten vazgeç');
+        } else {
+            $('#like').html('Beğen');
+        }
+    });
+    event.preventDefault();
+});
+</script>
+{% endblock %}

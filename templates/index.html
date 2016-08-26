@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+  <div id="map"></div>
+{% endblock %}
+{% block js %}
+<script type="text/javascript">
+var map = L.map('map').setView([40.705601, 31.678499], 13);
+
+L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+var markers = [];
+
+{% for place in places %}
+
+  var marker = L.marker([{{ place.coordinates }}], {icon : L.AwesomeMarkers.icon({
+    icon: '{{ place.category.icon }}',
+    markerColor: '{{ place.category.color }}',
+    prefix: 'fa'
+  })}).addTo(map)
+  .bindPopup('<div class="popup_container" style="text-align:center">' +
+                '<div class="popup_description" style="display: block">' +
+                  '<h2 style="margin-bottom:0px">' +
+                    '<a href="{{ place.get_absolute_url }}">{{ place.name }}</a>' +
+                  '</h2>' +
+                  '<span style="color:blue">{{ place.category }}</span>' +
+                '</div>' +
+                '<div class="popup_image" style="padding-top:15px">' +
+                  '{% if place.place_pictures.count > 0 %}' +
+                    '<img src="{{ place.place_pictures.0 }}" style="width:75px;height:75px"></img>' +
+                  '{%else%}' +
+                    '<img src="/media/uploads/no_image.jpg" style="width:75px;height:75px">' +
+                  '{% endif %}' +
+                '</div>' +
+              '</div>'
+            );
+
+  markers.push(marker);
+{% endfor %}
+var featureGroup = L.featureGroup(markers).addTo(map);
+map.fitBounds(featureGroup.getBounds());
+</script>
+{% endblock %}

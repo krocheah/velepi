@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+
+<form action="" method="post" class="form-signin">
+	<h2 class="form-signin-heading">{% trans "Please Sign In" %}</h2>
+	{% csrf_token %}
+	{{ form.as_p }}
+	<input type="submit" value="{% trans 'Login' %}" class="btn btn-lg btn-primary btn-block" />
+</form>
+{% endblock %}
