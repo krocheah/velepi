@@ -9,3 +9,30 @@ Pin işlemi, bir takım i18n işlemleri (deneme amaçlı olarak bir kısmı yap�
 bir takım bootstrap eklemeleri
 
 ufak ufak birşeyler yapmaya çalıştım ve devam ediyorum
+
+==============================================
+
+CATEGORYS KISMINDA UYGULADIKLARIM
+
+Name: Bisiklet Gezintisi
+Icon: tree
+Color: green
+
+--------------------------
+
+Name: Bisiklet Tamircisi
+Icon: cog
+Color: purple
+
+--------------------------
+
+Name: Bisiklet Dostu Restorant
+Icon: cutlery
+Color: Red
+
+-------------------------
+
+Name: Bisiklet Dostu Cafe
+Icon: coffee
+Color: blue
+
