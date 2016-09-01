@@ -68,11 +68,11 @@ class Review(models.Model):
     vote = models.IntegerField(
         default = 3,
         choices = (
-                (1, 'Berbat'),
-                (2, 'Kötü'),
+                (1, 'Bad'),
+                (2, 'Not Bad'),
                 (3, 'Meh'),
-                (4, 'Güzel'),
-                (5, 'Yıkılıyooo'),
+                (4, 'Fine'),
+                (5, 'Rocks'),
         )
     )
     is_active = models.BooleanField(default=False)

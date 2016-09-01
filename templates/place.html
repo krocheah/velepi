@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block content %}
 <div class = "container">
@@ -6,21 +7,25 @@
     <div class="col-md-4">
       <div class="place-info">
         <h2>{{ place.name }}</h2>
+        <h4>{{ place.category }}</h4>
+        <h4>{% trans "Average User Votes" %}: {{ average }}</h4>
+        {% if count > 0 %}
+          <h6>{% blocktrans %} Based on {{ count }} user reviews {% endblocktrans %}
+        {% endif %}
         <p>
           {% if place.likes.count > 0 %}
-            <span id='like-count'>{{ place.likes.count }} kişi begendi.</span>
+            <span id='like-count'>{{ place.likes.count }} {% trans "user liked this place" %}.</span>
           {% else %}
-             <span id='like-count'>Burayı şu an begenen yok.</span>
+             <span id='like-count'>{% trans "No user liked this place yet" %}.</span>
           {% endif %}
           {% if user.username %}
             {% if user in place.likes.all %}
-              <a id="like" href="{% url "like_place" place.id %}">Beğenmekten vazgeç</a>
+              <a id="like" href="{% url "like_place" place.id %}">{% trans "Unlike" %}</a>
             {% else %}
-              <a id="like" href="{% url "like_place" place.id %}">Beğen</a>
+              <a id="like" href="{% url "like_place" place.id %}">{% trans "Like" %}</a>
           {% endif %}
         {% endif %}
         </p>
-        <h4>{{ place.category }}</h4>
         <p>
             {{ place.description|linebreaksbr }}
         </p>
@@ -104,7 +109,11 @@ L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 
-L.marker([{{ place.coordinates }}]).addTo(map)
+var marker = L.marker([{{ place.coordinates }}], {icon : L.AwesomeMarkers.icon({
+  icon: '{{ place.category.icon }}',
+  markerColor: '{{ place.category.color }}',
+  prefix: 'fa'
+})}).addTo(map)
 .bindPopup('<div class="popup_container" style="text-align:center">' +
               '<div class="popup_description" style="display: block">' +
                 '<h2 style="margin-bottom:0px">' +
@@ -150,15 +159,15 @@ $('#like').on('click', function (event) {
           csrfmiddlewaretoken: "{{ csrf_token }}"
         }
     }).done(function (response) {
-      if ($('#like-count').html() == 'Burayı şu an begenen yok.'){
-        $('#like-count').html(response.count + ' kişi begendi.');
+      if ($('#like-count').html() == '{% trans "No user liked this place yet" %}.' || response.count > 0){
+        $('#like-count').html(response.count + ' {% trans "user liked this place" %}.');
       } else {
-        $('#like-count').html('Burayı şu an begenen yok.');
+        $('#like-count').html('{% trans "No user liked this place yet" %}.');
       }
         if (response.action === 'like') {
-            $('#like').html('Beğenmekten vazgeç');
+            $('#like').html('{% trans "Unlike" %}');
         } else {
-            $('#like').html('Beğen');
+            $('#like').html('{% trans "Like" %}');
         }
     });
     event.preventDefault();

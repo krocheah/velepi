@@ -61,7 +61,7 @@ class PlaceCreationForm(ModelForm):
             ):
                 raise ValidationError(_('Please enter an available coordinate.'))
         except ValueError:
-            raise ValidationError('Enter coordinates with click on the map where the place is shown.')
+            raise ValidationError(_('Enter coordinates with click on the map where the place is shown.'))
         return coords
 
 class MediaCreationForm(ModelForm):

@@ -18,11 +18,26 @@ def index(request):
 
 
 def detail(request, id):
-	return render(
+    place = get_object_or_404(Place, id = id, is_active = True)
+    total = 0
+    count = place.review_set.all().filter(is_active = True).count()
+    
+    for review in place.review_set.all().filter(is_active = True):
+        total += review.vote
+    try:
+        average = total / place.review_set.all().filter(is_active = True).count()
+    except:
+        average = 'Bu yer henüz puanlanmamış.'
+
+
+    return render(
         request,
         'place.html',
         {
-            'place': get_object_or_404(Place,  id = id, is_active = True),
+            'count' : count,
+            'place': place,
+            'average' : average,
+            #'average' : Place.votes.count(),
         }
     )
 
@@ -51,7 +66,7 @@ def new_place(request):
 
 @login_required(login_url='login')
 def new_media(request, place_id):
-    place = get_object_or_404(Place, id=place_id)
+    place = get_object_or_404(Place, id = place_id)
     form = MediaCreationForm()
 
     if request.method == 'POST':
@@ -78,7 +93,7 @@ def new_media(request, place_id):
 
 @login_required(login_url='login')
 def new_review(request, place_id):
-    place = get_object_or_404(Place, id=place_id)
+    place = get_object_or_404(Place, id = place_id)
     form = ReviewCreationForm()
 
     if request.method == 'POST':
