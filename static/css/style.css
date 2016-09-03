@@ -8,7 +8,7 @@ body {
 }
 
 #logo {
-	width: 120px;
+	width: 210px;
 	text-align: center;
 	float: left;
 }
@@ -17,11 +17,15 @@ body {
 	display: inline-block;
 	padding: 20px 10px;
 	color: black;
-	font-size: 2em;
+	font-size: 2.5em;
 	text-decoration: none;
 	font-weight: normal;
 	color: black;
 	border-radius: 5px;
+}
+
+#logo img {
+	width: 40%;
 }
 
 .header {
